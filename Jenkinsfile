@@ -64,6 +64,11 @@ pipeline {
     }
     stage('Build') {
       steps {
+          sh './gradlew --stacktrace build'
+          archiveArtifacts artifacts: 'build/libs/**/*.jar', fingerprint: true
+          echo "Running ${env.BUILD_ID}"
+      }
+      steps {
         script {
             openshift.withCluster() {
                 openshift.withProject() {
