@@ -1,5 +1,5 @@
 def templatePath = 'https://raw.githubusercontent.com/rozdolsky33/demo-test-gradle/master/pipeline.json'
-def templateName = 'test-spec-backend'
+def templateName = 'spring-gradle-backend'
 pipeline {
   agent {
     node {
