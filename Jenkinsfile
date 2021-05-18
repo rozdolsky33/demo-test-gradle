@@ -10,7 +10,7 @@ pipeline {
     timeout(time: 50, unit: 'MINUTES')
   }
   stages {
-    stage('preamble') {
+    stage('Preamble') {
         steps {
             script {
                 openshift.withCluster() {
@@ -21,7 +21,7 @@ pipeline {
             }
         }
     }
-    stage('cleanup') {
+    stage('Cluster Cleanup') {
       steps {
         script {
             openshift.withCluster() {
@@ -34,8 +34,23 @@ pipeline {
             }
         }
       }
-    }
-    stage('create') {
+    stage('Clean'){
+                steps {
+                    sh './gradlew --stacktrace clean'
+                }
+            }
+    stage('Check'){
+                steps {
+                    sh './gradlew --stacktrace check'
+                }
+            }
+    stage('Test'){
+                steps {
+                    sh './gradlew --stacktrace test'
+                    junit 'build/test-results/**/*.xml'
+                }
+            }
+    stage('Create App') {
       steps {
         script {
             openshift.withCluster() {
@@ -46,7 +61,7 @@ pipeline {
         }
       }
     }
-    stage('build') {
+    stage('Build') {
       steps {
         script {
             openshift.withCluster() {
@@ -61,6 +76,22 @@ pipeline {
             }
         }
       }
+    }
+    stage('Publish Artifact to Nexus'){
+      steps {
+            nexusArtifactUploader artifacts: [
+                                    [artifactId: 'demo-test-backend',
+                                     classifier: '',
+                                     file: 'build/libs/workspace-0.0.1.jar',
+                                     type: 'jar']],
+                                     credentialsId: 'nexuslogin',
+                                     groupId: 'DEV',
+                                     nexusUrl: 'nexus-nexus.bnsf-dev-03-e648741016b5b16f9b585588dcd0ed80-0000.us-south.containers.appdomain.cloud',
+                                     nexusVersion: 'nexus3',
+                                     protocol: 'http',
+                                     repository: 'spec-test-release',
+                                     version: 'Version.1.0.${BUILD_ID}'
+        }
     }
     stage('deploy') {
       steps {
