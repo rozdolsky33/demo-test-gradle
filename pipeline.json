@@ -2,9 +2,9 @@
   "kind": "Template",
   "apiVersion": "v1",
   "metadata": {
-    "name": "spring-gradle-backend",
+    "name": "demo-test-backend",
     "annotations": {
-      "openshift.io/display-name": "Test-Spring-Gradle",
+      "openshift.io/display-name": "Gradle",
       "description": "Gradle app for demo",
       "tags": "quickstart,gradle",
       "iconClass": "icon-gradle",
@@ -165,7 +165,7 @@
             "imageChangeParams": {
               "automatic": true,
               "containerNames": [
-                "test-spec-backend"
+                "demo-test-backend"
               ],
               "from": {
                 "kind": "ImageStreamTag",

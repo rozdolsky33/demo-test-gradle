@@ -1,5 +1,5 @@
 def templatePath = 'https://raw.githubusercontent.com/rozdolsky33/demo-test-gradle/master/pipeline.json'
-def templateName = 'spring-gradle-backend'
+def templateName = 'demo-test-backend'
 pipeline {
   agent {
     node {
@@ -52,7 +52,7 @@ pipeline {
             openshift.withCluster() {
                 openshift.withProject() {
                   def builds = openshift.selector("bc", templateName).related('builds')
-                  timeout(20) {
+                  timeout(10) {
                     builds.untilEach(1) {
                       return (it.object().status.phase == "Complete")
                     }
