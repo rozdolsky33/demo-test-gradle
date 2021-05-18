@@ -68,6 +68,21 @@ pipeline {
           archiveArtifacts artifacts: 'build/libs/**/*.jar', fingerprint: true
           echo "Running ${env.BUILD_ID}"
       }
+    stage('Publish Artifact To Nexus'){
+      steps {
+        nexusArtifactUploader artifacts: [
+                            [artifactId: 'demo-test-backend',
+                             classifier: '',
+                             file: 'build/libs/demo-test-gradle-0.0.1-SNAPSHOT.jar',
+                             type: 'jar']],
+                             credentialsId: 'nexuslogin',
+                             groupId: 'DEV',
+                             nexusUrl: 'nexus-nexus.bnsf-dev-03-e648741016b5b16f9b585588dcd0ed80-0000.us-south.containers.appdomain.cloud',
+                             nexusVersion: 'nexus3',
+                             protocol: 'http',
+                             repository: 'spec-test-release',
+                             version: 'Version.1.0.${BUILD_ID}'
+       }
     }
     stage('Build Deployment') {
       steps {
@@ -84,22 +99,6 @@ pipeline {
             }
         }
       }
-    }
-    stage('Publish Artifact To Nexus'){
-      steps {
-        nexusArtifactUploader artifacts: [
-                            [artifactId: 'demo-test-backend',
-                             classifier: '',
-                             file: 'build/libs/workspace-0.0.1.jar',
-                             type: 'jar']],
-                             credentialsId: 'nexuslogin',
-                             groupId: 'DEV',
-                             nexusUrl: 'nexus-nexus.bnsf-dev-03-e648741016b5b16f9b585588dcd0ed80-0000.us-south.containers.appdomain.cloud',
-                             nexusVersion: 'nexus3',
-                             protocol: 'http',
-                             repository: 'spec-test-release',
-                             version: 'Version.1.0.${BUILD_ID}'
-       }
     }
     stage('Deploy To Dev') {
       steps {
