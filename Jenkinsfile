@@ -51,7 +51,7 @@ pipeline {
         junit 'build/test-results/**/*.xml'
       }
     }
-    stage('Create App') {
+    stage('Create App Template') {
       steps {
         script {
             openshift.withCluster() {
@@ -62,12 +62,14 @@ pipeline {
         }
       }
     }
-    stage('Build') {
+    stage('Build Artifact') {
       steps {
           sh './gradlew --stacktrace build'
           archiveArtifacts artifacts: 'build/libs/**/*.jar', fingerprint: true
           echo "Running ${env.BUILD_ID}"
       }
+    }
+    stage('Build Deployment') {
       steps {
         script {
             openshift.withCluster() {
@@ -83,7 +85,7 @@ pipeline {
         }
       }
     }
-    stage('Publish Artifact to Nexus'){
+    stage('Publish Artifact To Nexus'){
       steps {
         nexusArtifactUploader artifacts: [
                             [artifactId: 'demo-test-backend',
@@ -99,7 +101,7 @@ pipeline {
                              version: 'Version.1.0.${BUILD_ID}'
        }
     }
-    stage('deploy') {
+    stage('Deploy To Dev') {
       steps {
         script {
             openshift.withCluster() {
@@ -115,7 +117,7 @@ pipeline {
         }
       }
     }
-    stage('tag') {
+    stage('Tag') {
       steps {
         script {
             openshift.withCluster() {
