@@ -62,12 +62,6 @@ pipeline {
         }
       }
     }
-    stage('Build Artifact') {
-      steps {
-          sh './gradlew --stacktrace build'
-          archiveArtifacts artifacts: 'build/libs/**/*.jar', fingerprint: true
-          echo "Running ${env.BUILD_ID}"
-      }
     stage('Publish Artifact To Nexus'){
       steps {
         nexusArtifactUploader artifacts: [
@@ -83,6 +77,13 @@ pipeline {
                              repository: 'spec-test-release',
                              version: 'Version.1.0.${BUILD_ID}'
        }
+    }
+    stage('Build Artifact') {
+      steps {
+          sh './gradlew --stacktrace build'
+          archiveArtifacts artifacts: 'build/libs/**/*.jar', fingerprint: true
+          echo "Running ${env.BUILD_ID}"
+      }
     }
     stage('Build Deployment') {
       steps {
