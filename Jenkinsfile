@@ -76,14 +76,14 @@ pipeline {
     }
     stage('Build Docker Image'){
       steps {
-         app = docker.build('vrozdolsky33/demo-test-gradle')
+         app = docker.build("vrozdolsky33/demo-test-gradle")
       }
     }
     stage('Push Docker Image'){
     steps {
-       docker.withRegistry('https://quay.io/user/vrozdolsky33', 'quay-io-login-personal'){
-           app.push("${env.BUILD_NUMBER}")
-           app.push("latest")
+       docker.withRegistry("https://quay.io/user/vrozdolsky33", "quay-io-login-personal"){
+          app.push("${env.BUILD_NUMBER}")
+          app.push("latest")
        }
     }
 
