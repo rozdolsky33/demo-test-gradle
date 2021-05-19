@@ -99,7 +99,7 @@
           "description": "Defines how to build the application",
           "template.alpha.openshift.io/wait-for-ready": "true",
           "jenkins.openshift.io/enable-multibranch-sync": "true",
-          "jenkins.openshift.io/multibranch-sync.branches": "pipeline"
+          "jenkins.openshift.io/multibranch-sync.branches": "quay_repo"
 
         }
       },
