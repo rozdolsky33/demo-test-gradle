@@ -51,17 +51,6 @@ pipeline {
         junit 'build/test-results/**/*.xml'
       }
     }
-    stage('Create App Template') {
-      steps {
-        script {
-            openshift.withCluster() {
-                openshift.withProject() {
-                  openshift.newApp(templatePath)
-                }
-            }
-        }
-      }
-    }
     stage('Build Artifact') {
       steps {
           sh './gradlew --stacktrace build'
@@ -85,6 +74,31 @@ pipeline {
                              version: 'Version.1.0.${BUILD_ID}'
        }
     }
+    stage('Build Docker Image'){
+      steps {
+         app = docker.build('vrozdolsky33/demo-test-gradle')
+      }
+    }
+    stage('Push Docker Image'){
+    steps {
+       docker.withRegistry('https://quay.io/user/vrozdolsky33', 'quay-io-login-personal'){
+           app.push("${env.BUILD_NUMBER}")
+           app.push("latest")
+       }
+    }
+
+    }
+    stage('Create App Template') {
+      steps {
+        script {
+            openshift.withCluster() {
+                openshift.withProject() {
+                  openshift.newApp(templatePath)
+                }
+            }
+        }
+      }
+    }
     stage('Build Deployment') {
       steps {
         script {
@@ -105,7 +119,7 @@ pipeline {
       steps {
         script {
             openshift.withCluster() {
-                openshift.withProject() {
+                openshift.withProject('bnsf-dev') {
                   def rm = openshift.selector("dc", templateName).rollout()
                   timeout(5) {
                     openshift.selector("dc", templateName).related('pods').untilEach(1) {
