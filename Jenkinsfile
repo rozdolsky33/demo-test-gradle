@@ -104,7 +104,7 @@ pipeline {
     stage('Deploy To Dev') {
       steps {
         script {
-            openshift.withCluster() {
+            openshift.withCluster('bnsf-dev') {
                 openshift.withProject() {
                   def rm = openshift.selector("dc", templateName).rollout()
                   timeout(5) {
@@ -121,7 +121,7 @@ pipeline {
       steps {
         script {
             openshift.withCluster() {
-                openshift.withProject() {
+                openshift.withProject('bnsf-dev') {
                   openshift.tag("${templateName}:latest", "${templateName}-staging:latest")
                 }
             }
