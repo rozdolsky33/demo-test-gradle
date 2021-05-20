@@ -14,7 +14,7 @@ pipeline {
         steps {
             script {
                 openshift.withCluster() {
-                    openshift.withProject() {
+                    openshift.withProject('bnsf-dev') {
                         echo "Using project: ${openshift.project()}"
                     }
                 }
@@ -25,7 +25,7 @@ pipeline {
       steps {
         script {
             openshift.withCluster() {
-                openshift.withProject() {
+                openshift.withProject('bnsf-dev') {
                   openshift.selector("all", [ template : templateName ]).delete()
                   if (openshift.selector("secrets", templateName).exists()) {
                     openshift.selector("secrets", templateName).delete()
@@ -55,7 +55,7 @@ pipeline {
       steps {
         script {
             openshift.withCluster() {
-                openshift.withProject() {
+                openshift.withProject('bnsf-dev') {
                   openshift.newApp(templatePath)
                 }
             }
