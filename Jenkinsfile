@@ -104,7 +104,7 @@ pipeline {
             // sh "oc tag tasks:latest tasks:${devTag}"
             script {
             openshift.withCluster() {
-                openshift.withProject("${devProject}") {
+                openshift.withProject('bnsf-dev') {
                 openshift.selector("bc", "tasks").startBuild("--from-file=./build/libs/demo-test-gradle-0.0.1-SNAPSHOT.jar", "--wait=true")
                 openshift.tag("tasks:latest", "tasks:${devTag}")
                 }
