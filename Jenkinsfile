@@ -1,5 +1,6 @@
 def templatePath = 'https://raw.githubusercontent.com/rozdolsky33/demo-test-gradle/pipeline-v3/pipeline.json'
 def templateName = 'demo-test-backend'
+def devTag  = '0.0-0'
 pipeline {
   agent {
     node {
@@ -85,6 +86,32 @@ pipeline {
                              version: 'Version.1.0.${BUILD_ID}'
        }
     }
+    stage('Build and Tag OpenShift Image') {
+          steps {
+            echo "Building OpenShift container image tasks:${devTag}"
+
+            // TBD: Start binary build in OpenShift using the file we just published.
+            // Either use the file from your
+            // workspace (filename to pass into the binary build
+            // is openshift-tasks.war in the 'target' directory of
+            // your current Jenkins workspace).
+            // OR use the file you just published into Nexus:
+            // "--from-file=http://nexus3.${prefix}-nexus.svc.cluster.local:8081/repository/releases/org/jboss/quickstarts/eap/tasks/${prodTag}/tasks-${prodTag}.war"
+
+            // sh "oc whoami"
+            // sh "oc project ${devProject}"
+            // sh "oc start-build tasks --from-file=target/openshift-tasks.war --wait"
+            // sh "oc tag tasks:latest tasks:${devTag}"
+            script {
+            openshift.withCluster() {
+                openshift.withProject("${devProject}") {
+                openshift.selector("bc", "tasks").startBuild("--from-file=./build/libs/demo-test-gradle-0.0.1-SNAPSHOT.jar", "--wait=true")
+                openshift.tag("tasks:latest", "tasks:${devTag}")
+                }
+              }
+            }
+          }
+        }
     stage('Build Deployment') {
       steps {
         script {
