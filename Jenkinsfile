@@ -92,7 +92,7 @@ def devTag  = 'Version.1.0.${BUILD_ID}'
             script {
                 openshift.withCluster() {
                     openshift.withProject('bnsf-dev') {
-                      openshift.tag("${templateName}:latest", "${templateName}-dev:latest")
+                      openshift.tag("${templateName}", "${templateName}-dev:latest")
                     }
                 }
             }
