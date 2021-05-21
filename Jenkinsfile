@@ -86,38 +86,49 @@ pipeline {
                              version: 'Version.1.0.${BUILD_ID}'
        }
     }
-    stage('Build and Tag OpenShift Image') {
-          steps {
-            echo "Building OpenShift container image tasks:${devTag}"
-
-            // TBD: Start binary build in OpenShift using the file we just published.
-            // Either use the file from your
-            // workspace (filename to pass into the binary build
-            // is openshift-tasks.war in the 'target' directory of
-            // your current Jenkins workspace).
-            // OR use the file you just published into Nexus:
-            // "--from-file=http://nexus3.${prefix}-nexus.svc.cluster.local:8081/repository/releases/org/jboss/quickstarts/eap/tasks/${prodTag}/tasks-${prodTag}.war"
-
-            // sh "oc whoami"
-            // sh "oc project ${devProject}"
-            // sh "oc start-build tasks --from-file=target/openshift-tasks.war --wait"
-            // sh "oc tag tasks:latest tasks:${devTag}"
-            script {
+//     stage('Build and Tag OpenShift Image') {
+//           steps {
+//             echo "Building OpenShift container image tasks:${devTag}"
+//
+//             // TBD: Start binary build in OpenShift using the file we just published.
+//             // Either use the file from your
+//             // workspace (filename to pass into the binary build
+//             // is openshift-tasks.war in the 'target' directory of
+//             // your current Jenkins workspace).
+//             // OR use the file you just published into Nexus:
+//             // "--from-file=http://nexus3.${prefix}-nexus.svc.cluster.local:8081/repository/releases/org/jboss/quickstarts/eap/tasks/${prodTag}/tasks-${prodTag}.war"
+//
+//             // sh "oc whoami"
+//             // sh "oc project ${devProject}"
+//             // sh "oc start-build tasks --from-file=target/openshift-tasks.war --wait"
+//             // sh "oc tag tasks:latest tasks:${devTag}"
+//             script {
+//             openshift.withCluster() {
+//                 openshift.withProject('bnsf-dev') {
+//                 openshift.selector("bc", "demo-test-backend").startBuild("--from-file=./build/libs/demo-test-gradle-0.0.1-SNAPSHOT.jar", "--wait=true")
+//                 openshift.tag("demo-test-backend:latest", "demo-test-backend:${devTag}")
+//                 }
+//               }
+//             }
+//           }
+//         }
+    stage('Tag') {
+      steps {
+        script {
             openshift.withCluster() {
                 openshift.withProject('bnsf-dev') {
-                openshift.selector("bc", "demo-test-backend").startBuild("--from-file=./build/libs/demo-test-gradle-0.0.1-SNAPSHOT.jar", "--wait=true")
-                openshift.tag("demo-test-backend:latest", "demo-test-backend:${devTag}")
+                  openshift.tag("${templateName}:latest", "${templateName}-dev:latest")
                 }
-              }
             }
-          }
         }
+      }
+    }
     stage('Build Deployment') {
       steps {
         script {
             openshift.withCluster() {
                 openshift.withProject('bnsf-dev') {
-                  def builds = openshift.selector("bc", templateName).related('builds')
+                  def builds = openshift.selector("bc", "${templateName}-dev:latest").related('builds')
                   timeout(10) {
                     builds.untilEach(1) {
                       return (it.object().status.phase == "Complete")
@@ -155,5 +166,21 @@ pipeline {
         }
       }
     }
+    stage('Deploy To Stage') {
+          steps {
+            script {
+                openshift.withCluster() {
+                    openshift.withProject('bnsf-stage') {
+                      def rm = openshift.selector("dc", templateName).rollout()
+                      timeout(5) {
+                        openshift.selector("dc", "${templateName}-staging:latest").related('pods').untilEach(1) {
+                          return (it.object().status.phase == "Running")
+                        }
+                      }
+                    }
+                }
+            }
+          }
+        }
   }
 }
