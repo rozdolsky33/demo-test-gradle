@@ -1,6 +1,6 @@
 def templatePath = 'https://raw.githubusercontent.com/rozdolsky33/demo-test-gradle/pipeline-v3/pipeline.yaml'
 def templateName = 'demo-test-backend'
-def devTag  = '0.0-0'
+def devTag  = 'Version.1.0.${BUILD_ID}'
 pipeline {
   agent {
     node {
@@ -106,7 +106,7 @@ pipeline {
             openshift.withCluster() {
                 openshift.withProject('bnsf-dev') {
                 openshift.selector("bc", "tasks").startBuild("--from-file=./build/libs/demo-test-gradle-0.0.1-SNAPSHOT.jar", "--wait=true")
-                openshift.tag("tasks:latest", "tasks:${devTag}")
+                openshift.tag("demo-test-backend:latest", "demo-test-backend:${devTag}")
                 }
               }
             }
