@@ -105,7 +105,7 @@ pipeline {
             script {
             openshift.withCluster() {
                 openshift.withProject('bnsf-dev') {
-                openshift.selector("bc", "tasks").startBuild("--from-file=./build/libs/demo-test-gradle-0.0.1-SNAPSHOT.jar", "--wait=true")
+                openshift.selector("bc", "demo-test-backend").startBuild("--from-file=./build/libs/demo-test-gradle-0.0.1-SNAPSHOT.jar", "--wait=true")
                 openshift.tag("demo-test-backend:latest", "demo-test-backend:${devTag}")
                 }
               }
