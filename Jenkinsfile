@@ -1,4 +1,4 @@
-def templatePath = 'https://raw.githubusercontent.com/rozdolsky33/demo-test-gradle/pipeline/pipeline.json'
+def templatePath = 'https://raw.githubusercontent.com/rozdolsky33/demo-test-gradle/pipeline-v3/pipeline.json'
 def templateName = 'demo-test-backend'
 pipeline {
   agent {
