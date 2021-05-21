@@ -156,26 +156,28 @@ def devTag  = 'Version.1.0.${BUILD_ID}'
             script {
                 openshift.withCluster() {
                     openshift.withProject('bnsf-stage') {
+                      echo "Building From Template"
                       openshift.newApp(templatePath)
+                      echo "Created template with new-app"
                     }
                 }
             }
           }
         }
-        stage('Stage Cluster Cleanup') {
-          steps {
-            script {
-                openshift.withCluster() {
-                    openshift.withProject('bnsf-stage') {
-                      openshift.selector("all", [ template : templateName ]).delete()
-                      if (openshift.selector("secrets", templateName).exists()) {
-                        openshift.selector("secrets", templateName).delete()
-                      }
-                    }
-                }
-            }
-          }
-        }
+//         stage('Stage Cluster Cleanup') {
+//           steps {
+//             script {
+//                 openshift.withCluster() {
+//                     openshift.withProject('bnsf-stage') {
+//                       openshift.selector("all", [ template : templateName ]).delete()
+//                       if (openshift.selector("secrets", templateName).exists()) {
+//                         openshift.selector("secrets", templateName).delete()
+//                       }
+//                     }
+//                 }
+//             }
+//           }
+//         }
         stage('Build Stage Deployment') {
           steps {
             script {
