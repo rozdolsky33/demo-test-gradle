@@ -11,31 +11,6 @@ def devTag  = 'Version.1.0.${BUILD_ID}'
         timeout(time: 50, unit: 'MINUTES')
       }
     stages {
-        stage('Preamble') {
-            steps {
-                script {
-                    openshift.withCluster() {
-                        openshift.withProject('bnsf-dev') {
-                            echo "Using project: ${openshift.project()}"
-                        }
-                    }
-                }
-            }
-        }
-        stage('Cluster Cleanup') {
-          steps {
-            script {
-                openshift.withCluster() {
-                    openshift.withProject('bnsf-dev') {
-                      openshift.selector("all", [ template : templateName ]).delete()
-                      if (openshift.selector("secrets", templateName).exists()) {
-                        openshift.selector("secrets", templateName).delete()
-                      }
-                    }
-                }
-            }
-          }
-        }
         stage('Clean'){
            steps {
               sh './gradlew --stacktrace clean'
@@ -50,17 +25,6 @@ def devTag  = 'Version.1.0.${BUILD_ID}'
           steps {
             sh './gradlew --stacktrace test'
             junit 'build/test-results/**/*.xml'
-          }
-        }
-        stage('Create App Template') {
-          steps {
-            script {
-                openshift.withCluster() {
-                    openshift.withProject('bnsf-dev') {
-                      openshift.newApp(templatePath)
-                    }
-                }
-            }
           }
         }
         stage('Build Artifact') {
@@ -86,7 +50,42 @@ def devTag  = 'Version.1.0.${BUILD_ID}'
                                  version: 'Version.1.0.${BUILD_ID}'
            }
         }
-
+        stage('Preamble') {
+            steps {
+                script {
+                    openshift.withCluster() {
+                        openshift.withProject('bnsf-dev') {
+                            echo "Using project: ${openshift.project()}"
+                        }
+                    }
+                }
+            }
+        }
+        stage('Dev Cluster Cleanup') {
+          steps {
+            script {
+                openshift.withCluster() {
+                    openshift.withProject('bnsf-dev') {
+                      openshift.selector("all", [ template : templateName ]).delete()
+                      if (openshift.selector("secrets", templateName).exists()) {
+                        openshift.selector("secrets", templateName).delete()
+                      }
+                    }
+                }
+            }
+          }
+        }
+        stage('Create App Template Dev') {
+          steps {
+            script {
+                openshift.withCluster() {
+                    openshift.withProject('bnsf-dev') {
+                      openshift.newApp(templatePath)
+                    }
+                }
+            }
+          }
+        }
         stage('Tag-dev') {
           steps {
             script {
@@ -98,7 +97,7 @@ def devTag  = 'Version.1.0.${BUILD_ID}'
             }
           }
         }
-        stage('Build Deployment') {
+        stage('Build Dev Deployment') {
           steps {
             script {
                 openshift.withCluster() {
@@ -139,6 +138,58 @@ def devTag  = 'Version.1.0.${BUILD_ID}'
                     }
                 }
               }
+          }
+        }
+        stage('Preamble') {
+            steps {
+                script {
+                    openshift.withCluster() {
+                        openshift.withProject('bnsf-stage') {
+                            echo "Using project: ${openshift.project()}"
+                        }
+                    }
+                }
+            }
+        }
+        stage('Create App Template Dev') {
+          steps {
+            script {
+                openshift.withCluster() {
+                    openshift.withProject('bnsf-stage') {
+                      openshift.newApp(templatePath)
+                    }
+                }
+            }
+          }
+        }
+        stage('Stage Cluster Cleanup') {
+          steps {
+            script {
+                openshift.withCluster() {
+                    openshift.withProject('bnsf-stage') {
+                      openshift.selector("all", [ template : templateName ]).delete()
+                      if (openshift.selector("secrets", templateName).exists()) {
+                        openshift.selector("secrets", templateName).delete()
+                      }
+                    }
+                }
+            }
+          }
+        }
+        stage('Build Stage Deployment') {
+          steps {
+            script {
+                openshift.withCluster() {
+                    openshift.withProject('bnsf-stage') {
+                      def builds = openshift.selector("bc", "${templateName}").related('builds')
+                      timeout(10) {
+                        builds.untilEach(1) {
+                          return (it.object().status.phase == "Complete")
+                        }
+                      }
+                   }
+                }
+            }
           }
         }
         stage('Deploy To Stage') {
