@@ -151,7 +151,7 @@ def devTag  = 'Version.1.0.${BUILD_ID}'
                 }
             }
         }
-        stage('Create App Template Dev') {
+        stage('Create App Template Stage') {
           steps {
             script {
                 openshift.withCluster() {
