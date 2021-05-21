@@ -103,7 +103,7 @@ def devTag  = 'Version.1.0.${BUILD_ID}'
             script {
                 openshift.withCluster() {
                     openshift.withProject('bnsf-dev') {
-                      def builds = openshift.selector("bc", "${templateName}-dev:latest").related('builds')
+                      def builds = openshift.selector("bc", "${templateName}").related('builds')
                       timeout(10) {
                         builds.untilEach(1) {
                           return (it.object().status.phase == "Complete")
@@ -148,7 +148,7 @@ def devTag  = 'Version.1.0.${BUILD_ID}'
                 openshift.withProject('bnsf-stage') {
                 def rm = openshift.selector("dc", templateName).rollout()
                   timeout(5) {
-                    openshift.selector("dc", "${templateName}-staging:latest").related('pods').untilEach(1) {
+                    openshift.selector("dc", "${templateName}").related('pods').untilEach(1) {
                           return (it.object().status.phase == "Running")
                       } //selector
                     } // timeout
