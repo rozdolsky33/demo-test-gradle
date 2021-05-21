@@ -134,7 +134,7 @@ pipeline {
                       return (it.object().status.phase == "Complete")
                     }
                   }
-                }
+               }
             }
         }
       }
@@ -150,7 +150,7 @@ pipeline {
                       return (it.object().status.phase == "Running")
                     }
                   }
-                }
+               }
             }
         }
       }
@@ -163,24 +163,24 @@ pipeline {
                   openshift.tag("${templateName}:latest", "${templateName}-staging:latest")
                 }
             }
-        }
+          }
       }
     }
     stage('Deploy To Stage') {
           steps {
             script {
-                openshift.withCluster() {
-                    openshift.withProject('bnsf-stage') {
-                      def rm = openshift.selector("dc", templateName).rollout()
-                      timeout(5) {
-                        openshift.selector("dc", "${templateName}-staging:latest").related('pods').untilEach(1) {
-                          return (it.object().status.phase == "Running")
-                        }
-                      }
-                    }
+              openshift.withCluster() {
+                openshift.withProject('bnsf-stage') {
+                  def rm = openshift.selector("dc", templateName).rollout()
+                  timeout(5) {
+                  openshift.selector("dc", "${templateName}-staging:latest").related('pods').untilEach(1) {
+                      return (it.object().status.phase == "Running")
+                  }
                 }
+              }
             }
           }
         }
-  }
-}
+      }
+   }
+ }
