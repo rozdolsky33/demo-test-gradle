@@ -50,7 +50,7 @@ def devTag  = 'Version.1.0.${BUILD_ID}'
                                  version: 'Version.1.0.${BUILD_ID}'
            }
         }
-        stage('Preamble') {
+        stage('Preamble Dev') {
             steps {
                 script {
                     openshift.withCluster() {
@@ -140,7 +140,7 @@ def devTag  = 'Version.1.0.${BUILD_ID}'
               }
           }
         }
-        stage('Preamble') {
+        stage('Preamble Stage') {
             steps {
                 script {
                     openshift.withCluster() {
