@@ -116,24 +116,46 @@ def devTag  = 'Version.1.0.${BUILD_ID}'
             }
           }
         }
-        stage('Deploy To Dev') {
-          steps {
-            script {
-                openshift.withCluster() {
-                    openshift.withProject('bnsf-dev') {
-                    echo "DEPLOYING TO DEV"
-                      def rm = openshift.selector("dc", "${templateName}-dev").rollout()
-                        timeout(10) {
-                        openshift.selector("dc", "${templateName}-dev").related('pods').untilEach(1) {
-                          return (it.object().status.phase == "Running")
+        stage('Deploy to dev'){
+                 stage('Deploy To Dev') {
+                   steps {
+                     script {
+                         openshift.withCluster() {
+                             openshift.withProject('bnsf-dev') {
+                              echo "DEPLOYING TO DEV"
+                         openshift.selector("dc", "demo-test-backend-dev").rollout().latest();
+                         echo "Waiting for ReplicationController demo-test-backend-dev to be ready"
 
-                        }
-                      }
-                   }
+                          def rc = openshift.selector("rc", "demo-test-backend-dev").object()
+
+                         while (rc.spec.replicas != rc.status.readyReplicas) {
+                                         sleep 5
+                                         rc = openshift.selector("rc", "demo-test-backend-dev").object()
+                         }
                 }
+              }
             }
           }
         }
+      }
+//         stage('Deploy To Dev') {
+//           steps {
+//             script {
+//                 openshift.withCluster() {
+//                     openshift.withProject('bnsf-dev') {
+//                     echo "DEPLOYING TO DEV"
+//                       def rm = openshift.selector("dc", "${templateName}-dev").rollout()
+//                         timeout(10) {
+//                         openshift.selector("dc", "${templateName}-dev").related('pods').untilEach(1) {
+//                           return (it.object().status.phase == "Running")
+//
+//                         }
+//                       }
+//                    }
+//                 }
+//             }
+//           }
+//         }
         stage('Tag staging') {
           steps {
             script {
