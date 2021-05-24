@@ -122,7 +122,7 @@ def devTag  = 'Version.1.0.${BUILD_ID}'
                  openshift.withCluster() {
                      openshift.withProject('bnsf-dev') {
                       echo "DEPLOYING TO DEV"
-                 openshift.selector("dc", "demo-test-backend-dev").rollout().latest();
+                 openshift.selector("dc", "demo-test-backend").rollout().latest();
                  echo "Waiting for ReplicationController demo-test-backend-dev to be ready"
                   def dc = openshift.selector("dc", "demo-test-backend").object()
                   def dc_version = dc.status.latestVersion
@@ -130,7 +130,7 @@ def devTag  = 'Version.1.0.${BUILD_ID}'
 
                  while (rc.spec.replicas != rc.status.readyReplicas) {
                                  sleep 5
-                                 rc = openshift.selector("rc", "demo-test-backend-dev-${dc_version}").object()
+                                 rc = openshift.selector("rc", "demo-test-backend-${dc_version}").object()
                          }
                 }
               }
