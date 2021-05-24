@@ -117,21 +117,12 @@ def devTag  = 'Version.1.0.${BUILD_ID}'
           }
         }
         stage('Deploy To Dev') {
-          when {
-             expression {
-                  openshift.withCluster(){
-                       openshift.withProject('bnsf-dev') {
-                       return !openshift.selector('dc', "${templateName}-dev:latest")
-                     }
-                  }
-               }
-            }
           steps {
             script {
                 openshift.withCluster() {
                     openshift.withProject('bnsf-dev') {
                     echo "DEPLOYING TO DEV"
-                      //def rm = openshift.selector("dc", "${templateName}-dev").rollout()
+                      def rm = openshift.selector("dc", "${templateName}-dev").rollout()
                         timeout(10) {
                         openshift.selector("dc", "${templateName}-dev").related('pods').untilEach(1) {
                           return (it.object().status.phase == "Running")
