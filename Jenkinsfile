@@ -124,12 +124,12 @@ def devTag  = 'Version.1.0.${BUILD_ID}'
                       echo "DEPLOYING TO DEV"
                  openshift.selector("dc", "demo-test-backend-dev").rollout().latest();
                  echo "Waiting for ReplicationController demo-test-backend-dev to be ready"
-
+                  def dc_version = dc.status.latestVersion
                   def rc = openshift.selector("rc", "demo-test-backend-dev").object()
 
                  while (rc.spec.replicas != rc.status.readyReplicas) {
                                  sleep 5
-                                 rc = openshift.selector("rc", "demo-test-backend-dev").object()
+                                 rc = openshift.selector("rc", "demo-test-backend-dev-${dc_version}").object()
                          }
                 }
               }
