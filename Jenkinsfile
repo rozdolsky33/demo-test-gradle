@@ -61,7 +61,7 @@ def devTag  = 'Version.1.0.${BUILD_ID}'
                 }
             }
         }
-        stage('Dev Cluster Cleanup') {
+        stage('Cluster Cleanup') {
           steps {
             script {
                 openshift.withCluster() {
@@ -86,22 +86,12 @@ def devTag  = 'Version.1.0.${BUILD_ID}'
             }
           }
         }
-        stage('Tag-dev') {
-          steps {
-            script {
-                openshift.withCluster() {
-                    openshift.withProject('bnsf-dev') {
-                      openshift.tag("${templateName}", "${templateName}-dev:latest")
-                    }
-                }
-            }
-          }
-        }
         stage('Build Dev Deployment') {
           steps {
             script {
                 openshift.withCluster() {
                     openshift.withProject('bnsf-dev') {
+                      echo " BUILDING DEV"
                       def builds = openshift.selector("bc", "${templateName}").related('builds')
                       timeout(10) {
                         builds.untilEach(1) {
@@ -113,14 +103,27 @@ def devTag  = 'Version.1.0.${BUILD_ID}'
             }
           }
         }
+        stage('Tag-dev') {
+          steps {
+            script {
+                openshift.withCluster() {
+                    openshift.withProject('bnsf-dev') {
+                      echo "TAG DEV"
+                      openshift.tag("${templateName}", "${templateName}-dev:latest")
+                    }
+                }
+            }
+          }
+        }
         stage('Deploy To Dev') {
           steps {
             script {
                 openshift.withCluster() {
                     openshift.withProject('bnsf-dev') {
-                      def rm = openshift.selector("dc", templateName).rollout()
+                    echo "DEPLOY TO DEV"
+                      def rm = openshift.selector("dc", "${templateName}-dev").rollout()
                       timeout(5) {
-                        openshift.selector("dc", templateName).related('pods').untilEach(1) {
+                        openshift.selector("dc", "${templateName}-dev").related('pods').untilEach(1) {
                           return (it.object().status.phase == "Running")
                         }
                       }
@@ -134,7 +137,7 @@ def devTag  = 'Version.1.0.${BUILD_ID}'
             script {
                 openshift.withCluster() {
                     openshift.withProject('bnsf-dev') {
-                      openshift.tag("${templateName}:latest", "${templateName}-staging:latest")
+                      openshift.tag("${templateName}-dev:latest", "${templateName}-staging:latest")
                     }
                 }
               }
@@ -164,26 +167,12 @@ def devTag  = 'Version.1.0.${BUILD_ID}'
             }
           }
         }
-//         stage('Stage Cluster Cleanup') {
-//           steps {
-//             script {
-//                 openshift.withCluster() {
-//                     openshift.withProject('bnsf-stage') {
-//                       openshift.selector("all", [ template : templateName ]).delete()
-//                       if (openshift.selector("secrets", templateName).exists()) {
-//                         openshift.selector("secrets", templateName).delete()
-//                       }
-//                     }
-//                 }
-//             }
-//           }
-//         }
         stage('Build Stage Deployment') {
           steps {
             script {
                 openshift.withCluster() {
                     openshift.withProject('bnsf-stage') {
-                      def builds = openshift.selector("bc", "${templateName}").related('builds')
+                      def builds = openshift.selector("bc", templateName).related('builds')
                       timeout(10) {
                         builds.untilEach(1) {
                           return (it.object().status.phase == "Complete")
@@ -199,9 +188,9 @@ def devTag  = 'Version.1.0.${BUILD_ID}'
             script {
               openshift.withCluster() {
                 openshift.withProject('bnsf-stage') {
-                def rm = openshift.selector("dc", templateName).rollout()
+                def rm = openshift.selector("dc", "${templateName}-staging").rollout()
                   timeout(5) {
-                    openshift.selector("dc", "${templateName}").related('pods').untilEach(1) {
+                    openshift.selector("dc", "${templateName}-staging").related('pods').untilEach(1) {
                           return (it.object().status.phase == "Running")
                       } //selector
                     } // timeout
