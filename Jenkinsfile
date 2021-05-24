@@ -123,7 +123,6 @@ def devTag  = 'Version.1.0.${BUILD_ID}'
                        return !openshift.selector('dc', "${templateName}-dev:latest")
                   }
                }
-               echo "Doesnt exists"
             }
           steps {
             script {
