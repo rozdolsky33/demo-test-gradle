@@ -120,7 +120,9 @@ def devTag  = 'Version.1.0.${BUILD_ID}'
           when {
              expression {
                   openshift.withCluster(){
+                       openshift.withProject('bnsf-dev') {
                        return !openshift.selector('dc', "${templateName}-dev:latest")
+                     }
                   }
                }
             }
