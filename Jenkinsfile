@@ -86,23 +86,23 @@ def devTag  = 'Version.1.0.${BUILD_ID}'
             }
           }
         }
-        stage('Build Dev Deployment') {
-          steps {
-            script {
-                openshift.withCluster() {
-                    openshift.withProject('bnsf-dev') {
-                      echo "BUILDING DEV"
-                      def builds = openshift.selector("bc", templateName).related('builds')
-                      timeout(10) {
-                        builds.untilEach(1) {
-                          return (it.object().status.phase == "Complete")
-                        }
-                      }
-                   }
-                }
-            }
-          }
-        }
+//         stage('Build Dev Deployment') {
+//           steps {
+//             script {
+//                 openshift.withCluster() {
+//                     openshift.withProject('bnsf-dev') {
+//                       echo "BUILDING DEV"
+//                       def builds = openshift.selector("bc", templateName).related('builds')
+//                       timeout(10) {
+//                         builds.untilEach(1) {
+//                           return (it.object().status.phase == "Complete")
+//                         }
+//                       }
+//                    }
+//                 }
+//             }
+//           }
+//         }
         stage('Tag-dev') {
           steps {
             script {
