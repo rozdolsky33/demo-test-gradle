@@ -75,7 +75,7 @@ def devTag  = 'Version.1.0.${BUILD_ID}'
             }
           }
         }
-        stage('Create App Template Dev') {
+        stage('Create App Template') {
           steps {
             script {
                 openshift.withCluster() {
@@ -91,7 +91,7 @@ def devTag  = 'Version.1.0.${BUILD_ID}'
             script {
                 openshift.withCluster() {
                     openshift.withProject('bnsf-dev') {
-                      echo " BUILDING DEV"
+                      echo "BUILDING DEV"
                       def builds = openshift.selector("bc", templateName).related('builds')
                       timeout(10) {
                         builds.untilEach(1) {
@@ -117,15 +117,24 @@ def devTag  = 'Version.1.0.${BUILD_ID}'
           }
         }
         stage('Deploy To Dev') {
+          when {
+             expression {
+                  openshift.withCluster(){
+                       return !openshift.selector('dc', "${templateName}-dev:latest")
+                  }
+               }
+               echo "Doesnt exists"
+            }
           steps {
             script {
                 openshift.withCluster() {
                     openshift.withProject('bnsf-dev') {
-                    echo "DEPLOY TO DEV"
-                      def rm = openshift.selector("dc", "${templateName}-dev").rollout()
-                      timeout(5) {
+                    echo "DEPLOYING TO DEV"
+                      //def rm = openshift.selector("dc", "${templateName}-dev").rollout()
+                        timeout(10) {
                         openshift.selector("dc", "${templateName}-dev").related('pods').untilEach(1) {
                           return (it.object().status.phase == "Running")
+
                         }
                       }
                    }
@@ -164,22 +173,6 @@ def devTag  = 'Version.1.0.${BUILD_ID}'
                       openshift.newApp(templatePath)
                       echo "Created template with new-app"
                     }
-                }
-            }
-          }
-        }
-        stage('Build Stage Deployment') {
-          steps {
-            script {
-                openshift.withCluster() {
-                    openshift.withProject('bnsf-stage') {
-                      def builds = openshift.selector("bc", templateName).related('builds')
-                      timeout(10) {
-                        builds.untilEach(1) {
-                          return (it.object().status.phase == "Complete")
-                        }
-                      }
-                   }
                 }
             }
           }
